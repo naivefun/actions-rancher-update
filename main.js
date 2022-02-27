@@ -1,5 +1,6 @@
 const core = require("@actions/core");
 const axios = require("axios");
+const https = require("https");
 
 process.on("unhandledRejection", handleError);
 main().catch(handleError);
