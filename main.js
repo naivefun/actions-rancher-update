@@ -2,6 +2,7 @@ const core = require("@actions/core");
 const axios = require("axios");
 const https = require("https");
 
+process.env["NODE_TLS_REJECT_UNAUTHORIZED"] = 0;
 process.on("unhandledRejection", handleError);
 main().catch(handleError);
 
