@@ -1,44 +1,46 @@
-const core = require('@actions/core');
-const axios = require('axios');
+const core = require("@actions/core");
+const axios = require("axios");
 
-process.on('unhandledRejection', handleError);
+process.on("unhandledRejection", handleError);
 main().catch(handleError);
 
 async function main() {
-  const rancherUrl = core.getInput('rancher_url', {required: true});
-  const rancherToken = core.getInput('rancher_token', {required: true});
-  const clusterId = core.getInput('cluster_id', {required: true});
-  const projectId = core.getInput('project_id', {required: true});
-  const namespace = core.getInput('namespace', {required: true});
-  const deployment = core.getInput('deployment', {required: true});
-  const dockerImage = core.getInput('docker_image', {required: true});
+  const rancherUrl = core.getInput("rancher_url", { required: true });
+  const rancherToken = core.getInput("rancher_token", { required: true });
+  const clusterId = core.getInput("cluster_id", { required: true });
+  const projectId = core.getInput("project_id", { required: true });
+  const namespace = core.getInput("namespace", { required: true });
+  const deployment = core.getInput("deployment", { required: true });
+  const dockerImage = core.getInput("docker_image", { required: true });
 
   await axios.patch(
     `${rancherUrl}/k8s/clusters/${clusterId}/apis/apps/v1/namespaces/${namespace}/deployments/${deployment}`,
     [
       {
-        op: 'replace',
-        path: '/spec/template/spec/containers/0/image',
+        op: "replace",
+        path: "/spec/template/spec/containers/0/image",
         value: dockerImage,
       },
     ],
     {
+      httpsAgent: new https.Agent({ rejectUnauthorized: false }),
       headers: {
-        'Content-Type': 'application/json-patch+json',
-        'Authorization': 'Bearer ' + rancherToken,
+        "Content-Type": "application/json-patch+json",
+        Authorization: "Bearer " + rancherToken,
       },
-    },
+    }
   );
 
   await axios.post(
     `${rancherUrl}/v3/projects/${clusterId}:${projectId}/workloads/deployment:${namespace}:${deployment}?action=redeploy`,
     {},
     {
+      httpsAgent: new https.Agent({ rejectUnauthorized: false }),
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + rancherToken,
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + rancherToken,
       },
-    },
+    }
   );
 }
 
